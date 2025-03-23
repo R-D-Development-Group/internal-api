@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  app:
+    image: tnanhekhan/internal-app
+    container_name: app
+    ports:
+      - "8082:8082"
+    env_file:
+      - .env
+      - .eks.env
+      - .keycloak.env
+    environment:
+      SPRING_DATASOURCE_USERNAME: "${INTERNAL_POSTGRES_USER}"
+      SPRING_DATASOURCE_PASSWORD: "${INTERNAL_POSTGRES_PASSWORD}"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/main_db"
+      SPRING_PROFILES_ACTIVE: local
+      ELASTICSEARCH_HOST: "${ELASTICSEARCH_HOST}"
+      ELASTICSEARCH_USER: "${ELASTICSEARCH_USER}"
+      ELASTICSEARCH_PASSWORD: "${ELASTICSEARCH_PASSWORD}"
+      LOGSTASH_PORT: "${LOGSTASH_PORT}"
+      LOGSTASH_URL: "${LOGSTASH_URL}"
+      KEYCLOAK_URL: "http://${KEYCLOAK_URL}"
+    depends_on:
+      - postgres
+    networks:
+      - local-network
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: "${INTERNAL_POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${INTERNAL_POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${INTERNAL_POSTGRES_DB_NAME}"
+    networks:
+      - local-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+networks:
+  local-network:
+    driver: bridge
+
+volumes:
+  postgres-data:

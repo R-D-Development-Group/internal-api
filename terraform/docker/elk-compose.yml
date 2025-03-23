@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    env_file:
+      - .env
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ELASTIC_PASSWORD: "${ELASTICSEARCH_PASSWORD}"
+      discovery.type: single-node
+    networks:
+      - local-network
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:7.15.2
+    env_file:
+      - .env
+    ports:
+      - "5044:5044"
+      - "5001:5000/tcp"
+      - "5001:5000/udp"
+      - "9600:9600"
+      - "4560:4560"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - local-network
+    volumes:
+      - type: bind
+        source: .logstash
+        target: /usr/share/logstash/pipeline
+        read_only: true
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.15.2
+    ports:
+      - "5601:5601"
+    networks:
+      - local-network
+    depends_on:
+      - elasticsearch
+
+volumes:
+  elasticsearch-data:
+
+networks:
+  local-network:
+    driver: bridge

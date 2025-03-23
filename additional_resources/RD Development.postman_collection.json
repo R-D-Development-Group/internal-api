@@ -1,0 +1,86 @@
+{
+	"info": {
+		"_postman_id": "478d8bf7-c4b3-47c8-81e6-478359d500bb",
+		"name": "RD Development",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "19404136"
+	},
+	"item": [
+		{
+			"name": "Create task list",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJNWkg3N0dfaWw1ajZQeEpDZXlERVo0aEtDRnU4cXhrNTU5bjd0tzc3k4In0.eyJleHAiOjE3NDEwMjIwOTcsImlhdCI6MTc0MTAyMTc5NywianRpIjoiZjZmNDBjYzctNWFmYy00YzdiLWE4YWItZWVhOTNjZGZjYTcxIiwiaXNzIjoiaHR0cDovL2tleWNsb2FrOjgwODAvcmVhbG1zL2ludGVybmFsIiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjdiN2NjOTBlLWJlMGItNGJlMS1iZGRjLTFiOTFhN2NjNTI0NCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImxvY2FsLWludGVybmFsLWFwcCIsInNpZCI6ImU3ZWM5OTI4LWIxNWQtNDUzNS1hMTdlLTJiMWRlNmFhMTdmNiIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsImRlZmF1bHQtcm9sZXMtaW50ZXJuYWwiXX0sInJlc291cmNlX2FjY2VzcyI6eyJsb2NhbC1pbnRlcm5hbC1hcHAiOnsicm9sZXMiOlsiREVWRUxPUEVSIiwiQURNSU4iLCJNT0RFUkFUT1IiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiTWFpbiBBZG1pbiIsInByZWZlcnJlZF91c2VybmFtZSI6ImFkbWluIiwiZ2l2ZW5fbmFtZSI6Ik1haW4iLCJhcHBVc2VySWQiOjEsImZhbWlseV9uYW1lIjoiQWRtaW4iLCJlbWFpbCI6ImFkbWluQGFkbWluLmEifQ.cfbAOHmxySPT2J1pltsb_gv0FCaB-YYjMj73dTqtAbgZzp_V1VXRD4xpDWBkFMJZeRtJ1YDFupFOCg_4PfZbqOtLAqrAyF0P49FiXyt0Xlw62iY94mwQpQLOknDtTDA_L1FWGjtWrRJLLj0mLUHqqbsGvl88KmgnnLZsTwuC9aUJ4wdIOPhPVrkFXw3LBvl7CCdnOe7wOAcSCgtkbOwZemnO9ylRyrieVQIOOAzqD8_gQgl_xCAXJNsRUpvJrt0tJPKa0l_KNnh6E-IXNDm_8n5AogQxVAOYyCsQqBikNNEakR-Jczz7EdW6S8UxHnAZvutkkOOP5OWNKjN_d_N78g"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"My Task List\",\n  \"tasks\": [\n    {\n      \"title\": \"Task 1\",\n      \"description\": \"This is task 1\"\n    },\n    {\n      \"title\": \"Task 2\",\n      \"description\": \"This is task 2\"\n    }\n  ]\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8082/api/task-list"
+			},
+			"response": []
+		},
+		{
+			"name": "Get task list",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJNWkg3N0dfaWw1ajZQeEpDZXlERVo0aEtDRnU4cXhrNTU5bjdnX0tzc3k4In0.eyJleHAiOjE3NDA5NTEzMTYsImlhdCI6MTc0MDk1MTAxNiwianRpIjoiMTE5YTFjYTctYWIwZi00NmIwLTk4YjctYzNmZjA0ODQ0MzBhIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgxL3JlYWxtcy9pbnRlcm5hbCIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiI3YjdjYzkwZS1iZTBiLTRiZTEtYmRkYy0xYjkxYTdjYzUyNDQiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJsb2NhbC1pbnRlcm5hbC1hcHAiLCJzaWQiOiI5MzY5ZmMwNy0zNGY5LTQ0ODQtOGY5Mi1kNzgyZGMzNjRlYjUiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iLCJkZWZhdWx0LXJvbGVzLWludGVybmFsIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsibG9jYWwtaW50ZXJuYWwtYXBwIjp7InJvbGVzIjpbIkRFVkVMT1BFUiIsIkFETUlOIiwiTU9ERVJBVE9SIl19LCJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6ImVtYWlsIHByb2ZpbGUiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmFtZSI6Ik1haW4gQWRtaW4iLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJhZG1pbiIsImdpdmVuX25hbWUiOiJNYWluIiwiYXBwVXNlcklkIjoxLCJmYW1pbHlfbmFtZSI6IkFkbWluIiwiZW1haWwiOiJhZG1pbkBhZG1pbi5hIn0.UL_Lh0juqHkJBCcA5KeQPCGiEOpeXVszPd7B15qSc5OhWo1B1nh0wHTC72KvjACt7is6ci4idtTJ7Cq6OgVUH31J3wXE63dZwu2c-OmamWWe_Wu2CsfOr9Wlv1CoxoYQoS9rLXxPTO-WHRVq2v17LnJhRMPptPOFTjYzVX4POW6dQQZcj0Sb7GFLuXUZ5mvb1D7xEhpwFdENpLvW_w0LAex68uvbBZ_hrTqOiGvzICbkaJ5L1mfgIk9rOh2Y2lEEXamc5Mbkddfy8t8V5tq16_-4r07Mjj0xYNdWd2HoYaIpt8e1oYZE_miYggd105-FKHyTa_J6jWg1qO9L_wtHTA"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8082/api/task-list/1"
+			},
+			"response": []
+		},
+		{
+			"name": "Generate a Bearer token",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "local-internal-app",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "admin",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "admin",
+							"type": "text"
+						}
+					]
+				},
+				"url": "http://localhost:8080/realms/internal/protocol/openid-connect/token"
+			},
+			"response": []
+		}
+	]
+}

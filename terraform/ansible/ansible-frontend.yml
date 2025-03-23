@@ -1,0 +1,102 @@
+- hosts: all
+  become: true
+  tasks:
+    - name: Update apt cache and install prerequisites
+      apt:
+        update_cache: yes
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - git
+          - unzip
+        state: present
+
+    - name: Install Node.js
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+        apt-get install -y nodejs
+        corepack enable
+      args:
+        executable: /bin/bash
+
+    - name: Clone the frontend repository
+      git:
+        repo: "https://github.com/R-D-Development-Group/front-end.git"
+        dest: "/home/ubuntu/frontend"
+        version: main
+        force: yes 
+
+    - name: Copy environment file to frontend folder
+      command: cp /home/ubuntu/.env /home/ubuntu/frontend/.env
+
+    - name: Install dependencies
+      command: npm install
+      args:
+        chdir: "/home/ubuntu/frontend/"
+
+    - name: Build the Vite app
+      command: npm run build
+      args:
+        chdir: "/home/ubuntu/frontend/"
+
+    - name: Ensure Nginx can access /home/ubuntu
+      file:
+        path: /home/ubuntu
+        state: directory
+        mode: "0755"
+
+    - name: Ensure Nginx can access /home/ubuntu/frontend
+      file:
+        path: /home/ubuntu/frontend
+        state: directory
+        mode: "0755"
+
+    - name: Set correct permissions for frontend build directory
+      file:
+        path: /home/ubuntu/frontend/dist
+        state: directory
+        mode: "0755"
+        recurse: yes
+
+    - name: Change ownership of frontend files to Nginx user
+      command: chown -R www-data:www-data /home/ubuntu/frontend
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Configure Nginx to serve Vite app
+      copy:
+        content: |
+          server {
+            listen 80;
+            server_name _;
+
+            root /home/ubuntu/frontend/dist;
+            index index.html;
+
+            location / {
+              try_files $uri $uri/ /index.html;
+            }
+          }
+        dest: /etc/nginx/sites-available/vite_app
+        mode: "0644"
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/vite_app
+        dest: /etc/nginx/sites-enabled/vite_app
+        state: link
+
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted

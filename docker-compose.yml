@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1.3
+    container_name: keycloak
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      KC_DB: postgres
+      KC_DB_USERNAME: "${KEYCLOAK_POSTGRES_USER}"
+      KC_DB_PASSWORD: "${KEYCLOAK_POSTGRES_PASSWORD}"
+      KC_DB_URL: "jdbc:postgresql://${KEYCLOAK_POSTGRES_URL}"
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: keycloak
+      KC_HOSTNAME_PORT: "8089"
+    command: [ "start-dev" ]
+    networks:
+      - local-network
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: "${INTERNAL_POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${INTERNAL_POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${INTERNAL_POSTGRES_DB_NAME}"
+    networks:
+      - local-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  app:
+    image: tnanhekhan/internal-app
+    container_name: app
+    ports:
+      - "8082:8082"
+    env_file:
+      - .env
+    environment:
+      SPRING_DATASOURCE_USERNAME: "${INTERNAL_POSTGRES_USER}"
+      SPRING_DATASOURCE_PASSWORD: "${INTERNAL_POSTGRES_PASSWORD}"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://${INTERNAL_POSTGRES_URL}"
+      SPRING_PROFILES_ACTIVE: local
+      ELASTICSEARCH_HOST: "${ELASTICSEARCH_HOST}"
+      ELASTICSEARCH_USER: "${ELASTICSEARCH_USER}"
+      ELASTICSEARCH_PASSWORD: "${ELASTICSEARCH_PASSWORD}"
+      LOGSTASH_PORT: "${LOGSTASH_PORT}"
+      LOGSTASH_URL: logstash:4560
+    depends_on:
+      - postgres
+      - library_logstash
+      - library_kibana
+      - library_elasticsearch
+    networks:
+      - local-network
+
+  library_elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.2
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    env_file:
+      - .env
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      ELASTIC_PASSWORD: "${ELASTICSEARCH_PASSWORD}"
+      discovery.type: single-node
+    networks:
+      - local-network
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+
+  library_logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:7.15.2
+    env_file:
+      - .env
+    ports:
+      - "5044:5044"
+      - "5001:5000/tcp"
+      - "5001:5000/udp"
+      - "9600:9600"
+      - "4560:4560"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - local-network
+    volumes:
+      - type: bind
+        source: .logstash
+        target: /usr/share/logstash/pipeline
+        read_only: true
+    depends_on:
+      - library_elasticsearch
+
+  library_kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.15.2
+    ports:
+      - "5601:5601"
+    networks:
+      - local-network
+    depends_on:
+      - library_elasticsearch
+
+networks:
+  local-network:
+    driver: bridge
+
+volumes:
+  keycloak-data:
+    driver: local
+  postgres-data:
+    driver: local
+  elasticsearch-data:
+    driver: local

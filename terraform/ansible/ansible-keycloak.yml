@@ -1,0 +1,93 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install prerequisites
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Install python
+      ansible.builtin.package:
+        name: python3
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Update apt cache after adding Docker repository
+      apt:
+        update_cache: yes
+
+    - name: Install Docker Engine, CLI, and Compose plugin
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Ensure Docker service is started
+      service:
+        name: docker
+        state: started
+      tags: docker
+
+    - name: Add 'ubuntu' user to the 'docker' group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+      tags: docker
+
+    - name: Ensure /home/ubuntu/keycloak-compose.yml exists
+      stat:
+        path: /home/ubuntu/keycloak-compose.yml
+      register: keycloak_compose_file
+
+    - name: Run docker-compose
+      command: docker compose -f /home/ubuntu/keycloak-compose.yml up -d
+      when: keycloak_compose_file.stat.exists
+      args:
+        chdir: /home/ubuntu/
+
+    - name: Wait for Keycloak to be ready
+      uri:
+        url: "http://localhost:8080/realms/master"
+        method: GET
+        return_content: no
+        status_code: 200
+      register: keycloak_health
+      until: keycloak_health.status == 200
+      retries: 10
+      delay: 5
+
+    - name: Update Keycloak realm settings (disable SSL requirement)
+      command: >
+        docker exec keycloak bash -c 
+        "cd /opt/keycloak/bin && 
+        ./kcadm.sh config credentials --server http://localhost:8080 --realm master --user admin --password admin && 
+        ./kcadm.sh update realms/master -s sslRequired=NONE"
+      register: update_output
+
+    - name: Display update output
+      debug:
+        var: update_output.stdout
+

@@ -1,0 +1,57 @@
+- name: Deploy Vite App to S3
+  hosts: localhost
+  vars:
+    repo_url: "git@github.com:R-D-Development-Group/front-end.git"
+    env_source: "{{ playbook_dir }}/../.env"  # Path to .env file relative to playbook
+    env_dest: "{{ playbook_dir }}/vite-app/.env"
+    project_dir: "{{ playbook_dir }}/vite-app"
+    build_dir: "{{ playbook_dir }}/vite-app/dist"
+    s3_bucket_url_file: "{{ playbook_dir }}/s3_bucket_url.txt"
+    s3_output_file: "{{ playbook_dir }}/vite_s3_url.txt"
+
+  tasks:
+    - name: Ensure required packages are installed
+      apt:
+        name:
+          - git
+          - nodejs
+          - npm
+        state: present
+      become: yes
+
+    - name: Load S3 Bucket URL from Terraform output
+      command: cat "{{ s3_bucket_url_file }}"
+      register: s3_url
+
+    - name: Clone the Vite repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ project_dir }}"
+        version: main
+
+    - name: Copy environment file from ../.env
+      copy:
+        src: "{{ env_source }}"
+        dest: "{{ env_dest }}"
+
+    - name: Install dependencies
+      command: npm install
+      args:
+        chdir: "{{ project_dir }}"
+
+    - name: Build the Vite app
+      command: npm run build
+      args:
+        chdir: "{{ project_dir }}"
+
+    - name: Upload built files to S3
+      command: aws s3 sync "{{ build_dir }}" "{{ s3_url.stdout }}" --delete
+
+    - name: Write S3 bucket URL to a file
+      copy:
+        content: "{{ s3_url.stdout }}"
+        dest: "{{ s3_output_file }}"
+
+    - name: Show S3 Bucket URL
+      debug:
+        msg: "Vite app deployed to {{ s3_url.stdout }}"

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+
+    <changeSet id="2025-02-17_create_user_table" author="vakaris">
+
+        <createTable tableName="APP_USER">
+            <column name="EMAIL" type="TEXT"/>
+            <column name="FULL_NAME" type="TEXT"/>
+
+            <!-- Base fields (from BaseEntity) -->
+            <column name="ID" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="CREATED" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LAST_MODIFIED" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSION" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="BIGINT"/>
+            <column name="LAST_MODIFIED_BY" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2025-02-17_create_task_tables" author="vakaris">
+        <createTable tableName="TASK_LIST">
+            <column name="NAME" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="STATE" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- Base fields (from BaseEntity) -->
+            <column name="ID" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="CREATED" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LAST_MODIFIED" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSION" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="BIGINT">
+                <constraints foreignKeyName="FK_TASK_LIST_CREATED_BY" references="APP_USER(ID)"/>
+            </column>
+            <column name="LAST_MODIFIED_BY" type="BIGINT">
+                <constraints foreignKeyName="FK_TASK_LIST_LAST_MODIFIED_BY" references="APP_USER(ID)"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="TASK">
+            <column name="TITLE" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="DESCRIPTION" type="TEXT"/>
+            <column name="COMPLETED_TIME" type="TIMESTAMP"/>
+            <column name="STATE" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TASK_LIST_ID" type="BIGINT">
+                <constraints foreignKeyName="FK_TASK_TASK_LIST" references="TASK_LIST(ID)"/>
+            </column>
+
+            <!-- Base fields (from BaseEntity) -->
+            <column name="ID" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="CREATED" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="LAST_MODIFIED" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="VERSION" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CREATED_BY" type="BIGINT">
+                <constraints foreignKeyName="FK_TASK_CREATED_BY" references="APP_USER(ID)"/>
+            </column>
+            <column name="LAST_MODIFIED_BY" type="BIGINT">
+                <constraints foreignKeyName="FK_TASK_LAST_MODIFIED_BY" references="APP_USER(ID)"/>
+            </column>
+
+        </createTable>
+
+        <createIndex indexName="IDX_TASK_LIST_ID_TASK" tableName="TASK">
+            <column name="TASK_LIST_ID"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2025-02-18_add_default_system_user" author="vakaris">
+        <insert tableName="APP_USER">
+            <column name="EMAIL" value="default@system.user"/>
+            <column name="FULL_NAME" value="Default System User"/>
+            <column name="CREATED" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="LAST_MODIFIED" valueComputed="CURRENT_TIMESTAMP"/>
+            <column name="VERSION" value="1"/>
+            <column name="CREATED_BY" value="1"/>
+            <column name="LAST_MODIFIED_BY" value="1"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

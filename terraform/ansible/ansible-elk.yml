@@ -1,0 +1,114 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install prerequisites
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Install python
+      ansible.builtin.package:
+        name: python3
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Update apt cache after adding Docker repository
+      apt:
+        update_cache: yes
+
+    - name: Install Docker Engine, CLI, and Compose plugin
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Ensure Docker service is started
+      service:
+        name: docker
+        state: started
+      tags: docker
+
+    - name: Add 'ubuntu' user to the 'docker' group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+      tags: docker
+
+    - name: Ensure /home/ubuntu/elk-compose.yml exists
+      stat:
+        path: /home/ubuntu/elk-compose.yml
+      register: elk_compose_file
+
+    - name: Ensure .logstash directory exists
+      ansible.builtin.file:
+        path: /home/ubuntu/.logstash
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Create logstash.conf with specified content
+      ansible.builtin.copy:
+        dest: /home/ubuntu/.logstash/logstash.conf
+        content: |
+          input {
+              tcp {
+                  mode => "server"
+                  port => "${LOGSTASH_PORT}"
+                  codec => json_lines
+              }
+              file {
+                  type => "java"
+                  path => "/var/log/logs/library/application.log"
+                  codec => multiline {
+                      pattern => "^%{YEAR}-%{MONTHNUM}-%{MONTHDAY} %{TIME}.*"
+                      negate => "true"
+                      what => "previous"
+                  }
+              }
+          }
+
+          output {
+              stdout {
+                  codec => rubydebug
+              }
+              elasticsearch {
+                  index => "library-logstash-%{+YYYY.MM.dd}"
+                  hosts => "${ELASTICSEARCH_HOST}"
+                  user => "${ELASTICSEARCH_USER}"
+                  password => "${ELASTICSEARCH_PASSWORD}"
+                  ecs_compatibility => disabled
+              }
+          }
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    - name: Run docker-compose
+      command: docker compose -f /home/ubuntu/elk-compose.yml up -d
+      when: elk_compose_file.stat.exists
+      args:
+        chdir: /home/ubuntu/

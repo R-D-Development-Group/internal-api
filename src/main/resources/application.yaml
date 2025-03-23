@@ -1,0 +1,40 @@
+server:
+  port: 8082
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  application:
+    name: my-spring-app
+  jpa:
+    open-in-view: false
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_URL}:8080/realms/internal
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+
+logging:
+  level:
+    com.zaxxer.hikari: warn
+    org.hibernate: warn
+
+springdoc:
+  api-docs:
+    path: /public/api-docs
+    enabled: true
+  swagger-ui:
+    path: /public/swagger-ui
+    enabled: true
+
+jwt:
+  auth:
+    converter:
+      resource-id: local-internal-app
+      principle-attribute: preferred_username
