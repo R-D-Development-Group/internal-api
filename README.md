@@ -87,5 +87,7 @@ Note add the PORT (i.e. :1010) at the end and use http://
 
 ## Copyright
 
-**Authors:** Vakaris Paulavicius, Tabish Nanhekhan
+Authors: Vakaris Paulavicius, Tabish Nanhekhan, Jashvant Sewmangal, Julian Warner 
 2025 | University of Amsterdam
+
+
